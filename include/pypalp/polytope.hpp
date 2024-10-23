@@ -36,6 +36,32 @@ struct Polytope {
   std::optional<pybind11::array_t<Long>> vertices_;
   std::optional<pybind11::array_t<Long>> points_;
 
+  Polytope(std::string const &input) {
+    std::atexit(check_final_status);
+
+    inFILE = std::tmpfile();
+    outFILE = std::tmpfile();
+
+    std::fwrite(input.c_str(), sizeof(char), input.size(), inFILE);
+    std::fputs("\n", inFILE);
+    std::rewind(inFILE);
+
+    CW = std::make_unique<CWS>();
+    P = std::make_unique<PolyPointList>();
+
+    Read_CWS_PP(CW.get(), P.get());
+
+    std::fclose(inFILE);
+    std::fclose(outFILE);
+    outFILE = nullptr;
+
+    ran_Find_Equations = false;
+    ran_EL_to_PPL = false;
+    ran_Sort_VL = false;
+    ran_Make_VEPM = false;
+    ran_Complete_Poly = false;
+  }
+
   Polytope(pybind11::array_t<int> const &matrix) {
     std::atexit(check_final_status);
 

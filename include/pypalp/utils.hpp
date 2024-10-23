@@ -31,26 +31,34 @@ void read_into_file(pybind11::array_t<int> const &matrix, std::FILE *file) {
 
   pybind11::buffer_info buf = matrix.request();
 
-  if (buf.ndim != 2) {
-    throw std::runtime_error("Input should be a matrix");
-  }
+  if (buf.ndim == 1) { // Input as weight system
+    int *ptr = static_cast<int *>(buf.ptr);
+    ssize_t len = buf.shape[0];
 
-  int *ptr = static_cast<int *>(buf.ptr);
-
-  ssize_t rows = buf.shape[0];
-  ssize_t cols = buf.shape[1];
-
-  char buffer[32];
-  std::snprintf(buffer, sizeof(buffer), "%ld %ld\n", rows, cols);
-  std::fputs(buffer, file);
-
-  for (ssize_t i = 0; i < rows; i++) {
-    for (ssize_t j = 0; j < cols; j++) {
-      std::snprintf(buffer, sizeof(buffer), "%d ", ptr[i * cols + j]);
+    char buffer[32];
+    for (ssize_t i = 0; i < len; i++) {
+      std::snprintf(buffer, sizeof(buffer), "%d ", ptr[i]);
       std::fputs(buffer, file);
     }
     std::fputs("\n", file);
-  }
+  } else if (buf.ndim == 2) { // Input as matrix of points
+    int *ptr = static_cast<int *>(buf.ptr);
+    ssize_t rows = buf.shape[0];
+    ssize_t cols = buf.shape[1];
 
+    char buffer[32];
+    std::snprintf(buffer, sizeof(buffer), "%ld %ld\n", rows, cols);
+    std::fputs(buffer, file);
+
+    for (ssize_t i = 0; i < rows; i++) {
+      for (ssize_t j = 0; j < cols; j++) {
+        std::snprintf(buffer, sizeof(buffer), "%d ", ptr[i * cols + j]);
+        std::fputs(buffer, file);
+      }
+      std::fputs("\n", file);
+    }
+  } else {
+    throw std::runtime_error("Input should be a vector or matrix");
+  }
   std::rewind(file);
 }

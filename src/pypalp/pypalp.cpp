@@ -4,6 +4,7 @@
 
 PYBIND11_MODULE(pypalp, m) {
   pybind11::class_<Polytope>(m, "Polytope")
+      .def(pybind11::init<std::string const &>())
       .def(pybind11::init<pybind11::array_t<int> const &>())
       .def("vertices", &Polytope::vertices)
       .def("points", &Polytope::points)

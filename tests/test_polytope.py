@@ -58,3 +58,23 @@ def test_reflexive():
     p = Polytope(vertices)
 
     assert p.is_reflexive()
+
+def test_constructors():
+    vertices = [[-1, -1, -1, -1],
+                     [0, -1, -1, -1],
+                     [0, 3, -1, -1],
+                     [1, -1, 3, -1],
+                     [0, -1, -1, 0],
+                     [0, 3, -1, 0],
+                     [-1, -1, -1, 2]]
+    sorted_vertices = sorted(tuple(pt) for pt in vertices)
+
+    p1 = Polytope(vertices)
+    p2 = Polytope([4, 7, 7, 10, 12, 40])
+    p3 = Polytope("4 7 7 10 12  40=d  rn  H:28  16  M: 23  7  N:25  6  P:3  F:2  7 12")
+
+    v1 = sorted(tuple(pt) for pt in p1.vertices())
+    v2 = sorted(tuple(pt) for pt in p2.vertices())
+    v3 = sorted(tuple(pt) for pt in p3.vertices())
+
+    assert v1 == v2 == v3 == sorted_vertices
