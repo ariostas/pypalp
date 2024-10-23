@@ -1,4 +1,4 @@
-name: Build and Test
+name: Python CI
 
 on:
   push:
@@ -24,6 +24,8 @@ jobs:
     steps:
       - name: Check out repo
         uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
