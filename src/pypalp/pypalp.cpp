@@ -9,5 +9,7 @@ PYBIND11_MODULE(pypalp, m) {
       .def("vertices", &Polytope::vertices)
       .def("points", &Polytope::points)
       .def("is_ip", &Polytope::is_ip)
-      .def("is_reflexive", &Polytope::is_reflexive);
+      .def("is_reflexive", &Polytope::is_reflexive)
+      .def("normal_form", &Polytope::normal_form,
+           pybind11::arg("affine") = false);
 }

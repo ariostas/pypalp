@@ -78,3 +78,20 @@ def test_constructors():
     v3 = sorted(tuple(pt) for pt in p3.vertices())
 
     assert v1 == v2 == v3 == sorted_vertices
+
+def test_normal_form():
+    p1_str = "1 1 1  1  1   5=d  TS  H: 1 101  M:126  5  N: 6  5  P:0  F:0"
+    p1_nf = [[1,0,0,0],[1,5,0,0],[1,0,5,0],[1,0,0,5],[-4,-5,-5,-5]]
+    p1_anf = [[5,0,0,0],[0,5,0,0],[0,0,5,0],[0,0,0,5],[0,0,0,0]]
+
+    p1 = Polytope(p1_str)
+    assert p1.normal_form().tolist() == p1_nf
+    assert p1.normal_form(affine=True).tolist() == p1_anf
+
+    p2_str = "1 3 3 10 14  31=d  Tn  H:14 106  M:143  9  N:21  7  P:0  F:0"
+    p2_nf = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,0,0,1],[3,-4,-1,-1],[-4,3,-1,-1],[4,-6,-2,-1],[-6,4,-2,-1],[-6,-6,-2,9]]
+    p2_anf = [[1,0,0,0],[0,1,0,0],[0,0,1,0],[0,3,3,4],[7,3,3,4],[10,4,5,6],[0,4,5,6],[0,4,15,6],[0,0,0,0]]
+
+    p2 = Polytope(p2_str)
+    assert p2.normal_form().tolist() == p2_nf
+    assert p2.normal_form(affine=True).tolist() == p2_anf

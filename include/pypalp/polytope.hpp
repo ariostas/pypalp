@@ -25,6 +25,11 @@ struct Polytope {
   std::unique_ptr<PairMatStruct> DPM;
   std::unique_ptr<C5stats> C5S;
 
+  // Additional data structures
+  std::unique_ptr<NormalForm> NF;
+  std::unique_ptr<AffineNormalForm> ANF;
+  std::unique_ptr<VPermList> VP;
+
   // Cached results from computations
   bool ran_Find_Equations;
   bool ran_EL_to_PPL;
@@ -35,6 +40,8 @@ struct Polytope {
   std::optional<bool> is_reflexive_;
   std::optional<pybind11::array_t<Long>> vertices_;
   std::optional<pybind11::array_t<Long>> points_;
+  std::optional<pybind11::array_t<Long>> normal_form_;
+  std::optional<pybind11::array_t<Long>> affine_normal_form_;
 
   Polytope(std::string const &input) {
     std::atexit(check_final_status);
@@ -213,5 +220,70 @@ struct Polytope {
     // Need to also check if it is IP since is_reflexive_ is std::nullopt if
     // is_ip_ is false
     return *is_ip_ && *is_reflexive_;
+  }
+
+  pybind11::array_t<Long> normal_form(bool affine) {
+    if (affine and affine_normal_form_) {
+      return *affine_normal_form_;
+    } else if (!affine and normal_form_) {
+      return *normal_form_;
+    }
+
+    // Make sure vertices have been computed
+    vertices();
+
+    if (affine) {
+      if (!ANF) {
+        ANF = std::make_unique<AffineNormalForm>();
+      }
+      Make_ANF(P.get(), V.get(), E.get(), ANF->data);
+
+      ssize_t num_vert = V->nv;
+      ssize_t dim = P->n;
+
+      auto result = pybind11::array_t<Long>({num_vert, dim});
+
+      auto buf = result.mutable_data();
+
+      for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < num_vert; j++) {
+          buf[j * dim + i] = ANF->data[i][j];
+        }
+      }
+
+      ANF = nullptr;
+
+      affine_normal_form_ = std::move(result);
+      return *affine_normal_form_;
+    } else {
+      if (!NF) {
+        NF = std::make_unique<NormalForm>();
+      }
+      if (!VP) {
+        VP = std::make_unique<VPermList>();
+      }
+      int SymNum;
+      Make_Poly_Sym_NF(P.get(), V.get(), E.get(), &SymNum, VP->data, NF->data,
+                       0, 0, 0);
+
+      ssize_t num_vert = V->nv;
+      ssize_t dim = P->n;
+
+      auto result = pybind11::array_t<Long>({num_vert, dim});
+
+      auto buf = result.mutable_data();
+
+      for (int i = 0; i < dim; i++) {
+        for (int j = 0; j < num_vert; j++) {
+          buf[j * dim + i] = NF->data[i][j];
+        }
+      }
+
+      NF = nullptr;
+      VP = nullptr;
+
+      normal_form_ = std::move(result);
+      return *normal_form_;
+    }
   }
 };
