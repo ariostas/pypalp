@@ -4,6 +4,8 @@
 #include <optional>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
+#include <pybind11/stl.h>
+#include <tuple>
 
 #include "pypalp/palp_types.hpp"
 #include "pypalp/utils.hpp"
@@ -285,5 +287,153 @@ struct Polytope {
       normal_form_ = std::move(result);
       return *normal_form_;
     }
+  }
+
+  std::vector<std::tuple<std::vector<std::vector<int>>,
+                         std::optional<std::vector<std::vector<int>>>,
+                         std::optional<int>>>
+  nef_partitions(int codim, bool keep_symmetric, bool keep_products,
+                 bool keep_projections, bool with_hodge_numbers) {
+    // We don't cache any results for this function
+    // We take the polytope as an N polytope!
+
+    // Make sure the polytope is reflexive
+    if (!is_reflexive()) {
+      throw std::runtime_error("the polytope must be reflexive");
+    }
+
+    if (POLY_Dmax < (P->n + codim - 1)) {
+      throw std::runtime_error(
+          "this computation requires POLY_Dmax to be increased");
+    }
+
+    points(); // All points MUST be computed
+
+    std::atexit(check_final_status);
+    outFILE = std::tmpfile();
+
+    std::vector<std::tuple<std::vector<std::vector<int>>,
+                           std::optional<std::vector<std::vector<int>>>,
+                           std::optional<int>>>
+        nef_parts;
+
+    // Start algorithm in Make_E_Poly
+
+    Flags NEF_F;
+    NEF_F.Sym = !keep_symmetric;
+    NEF_F.Dir = keep_products;
+    NEF_F.Proj = keep_projections;
+    NEF_F.t = 0;
+    NEF_F.S = 0;
+    NEF_F.T = 0;
+
+    auto NEF_EP = std::make_unique<EPoly>();
+    auto NEF_PTL = std::make_unique<PartList>();
+    auto NEF_P_D = std::make_unique<PolyPointList>();
+    auto NEF_P_N = std::make_unique<PolyPointList>();
+    auto NEF_V_D = std::make_unique<VertexNumList>();
+    auto NEF_V_N = std::make_unique<VertexNumList>();
+    auto NEF_E_D = std::make_unique<EqList>();
+    auto NEF_E_N = std::make_unique<EqList>();
+    auto NEF_DP = std::make_unique<PolyPointList>();
+    auto NEF_DV = std::make_unique<VertexNumList>();
+    auto NEF_DE = std::make_unique<EqList>();
+
+    auto NEF_P = std::make_unique<PolyPointList>(*P);
+    auto NEF_E = std::make_unique<EqList>(*E);
+    auto NEF_V = std::make_unique<VertexNumList>(*V);
+    Make_Dual_Poly(NEF_P.get(), NEF_V.get(), NEF_E.get(), NEF_DP.get());
+    Find_Equations(NEF_DP.get(), NEF_DV.get(), NEF_DE.get());
+    Sort_PPL(NEF_DP.get(), NEF_DV.get());
+
+    // Not used, but they need to be initialized
+    time_t Tstart = time(NULL);
+    clock_t Cstart = clock();
+
+    NEF_Flags NF;
+    NF.Sym = NEF_F.Sym;
+    NF.noconvex = 0;
+    NF.Test = 0;
+    NF.Sort = 1;
+
+    part_nef(NEF_P.get(), NEF_V.get(), NEF_E.get(), NEF_PTL.get(), &codim, &NF);
+
+    for (int n = 0; n < NEF_PTL->n; n++) {
+      Make_Gore_Poly(NEF_P.get(), NEF_DP.get(), NEF_P_D.get(), NEF_P_N.get(),
+                     NEF_V.get(), NEF_PTL.get(), &codim, &n);
+      NEF_PTL->Proj[n] = Remove_Proj(NEF_P_D.get(), &codim);
+      NEF_PTL->DProj[n] = Remove_Proj(NEF_P_N.get(), &codim);
+      Find_Equations(NEF_P_D.get(), NEF_V_D.get(), NEF_E_D.get());
+      Find_Equations(NEF_P_N.get(), NEF_V_N.get(), NEF_E_N.get());
+      Sort_PPL(NEF_P_N.get(), NEF_V_N.get());
+
+      if (((!NEF_PTL->Proj[n]) || NEF_F.Proj) &&
+          ((!NEF_PTL->DirProduct[n]) || NEF_F.Dir)) {
+        Make_EN(NEF_P_D.get(), NEF_V_D.get(), NEF_E_N.get(), &codim);
+        Compute_E_Poly(NEF_EP.get(), NEF_P_D.get(), NEF_V_D.get(),
+                       NEF_E_D.get(), NEF_P_N.get(), NEF_V_N.get(),
+                       NEF_E_N.get(), &codim, &NEF_F, &Tstart, &Cstart);
+
+        // Output
+        std::optional<int> chi;
+        int D = (NEF_P_D->n + 1);
+        int dim = (NEF_P->n - codim);
+        int h[POLY_Dmax][POLY_Dmax] = {{0}, {0}};
+        int S[VERT_Nmax];
+
+        if (with_hodge_numbers) {
+          chi = Make_Mirror(NEF_EP.get(), h, D, dim);
+        }
+
+        if ((NEF_P_D->np - codim) > VERT_Nmax) {
+          std::cerr << "this nef partition requires VERT_Nmax to be increased"
+                    << std::endl;
+          continue;
+        }
+
+        for (int i = 0; i < (NEF_P_D->np - codim); i++) {
+          S[i] = 0;
+          for (int j = 0; j < (codim - 1); j++) {
+            if (NEF_P_D->x[i][j]) {
+              S[i] = (j + 1);
+            }
+          }
+        }
+
+        std::vector<std::vector<int>> nef_part;
+        std::vector<int> part;
+
+        for (int i = 0; i < codim; i++) {
+          for (int k = 0; k < NEF_PTL->nv; k++) {
+            if (NEF_PTL->S[n][k] == i) {
+              part.push_back(k);
+            }
+          }
+          nef_part.push_back(std::move(part));
+        }
+
+        std::optional<std::vector<std::vector<int>>> hodge_numbers;
+        if (with_hodge_numbers) {
+          hodge_numbers = std::vector<std::vector<int>>(dim + 1);
+          for (int i = 0; i < dim + 1; i++) {
+            for (int j = 0; j < dim + 1; j++) {
+              int ii = (i == dim ? 0 : i);
+              int jj = (j == dim ? 0 : j);
+              hodge_numbers.value()[i].push_back(h[ii][jj]);
+            }
+          }
+        }
+
+        nef_parts.push_back(std::make_tuple(std::move(nef_part),
+                                            std::move(hodge_numbers), chi));
+      }
+    }
+
+    // End algorithm in Make_E_Poly
+
+    std::fclose(outFILE);
+    outFILE = nullptr;
+
+    return nef_parts;
   }
 };

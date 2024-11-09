@@ -95,3 +95,34 @@ def test_normal_form():
     p2 = Polytope(p2_str)
     assert p2.normal_form().tolist() == p2_nf
     assert p2.normal_form(affine=True).tolist() == p2_anf
+
+def test_nef_partitions():
+    p = Polytope([[1,0,0,0,0],[0,1,0,0,0],[-1,-1,0,0,0],[0,0,1,0,0],[0,0,-1,0,0],[0,0,0,1,0],[0,0,0,0,1],[0,0,0,-1,-1]])
+
+    nefparts_no_hodge = p.nef_partitions(with_hodge_numbers=False)
+    assert len(nefparts_no_hodge) == 11
+    for i, nefpart in enumerate(nefparts_no_hodge):
+        assert nefpart[1] is None
+        assert nefpart[2] is None
+        if i == 0:
+            assert nefpart[0] == [[0, 1, 5, 6], [2, 3, 4, 7]]
+        elif i == 1:
+            assert nefpart[0] == [[0, 1, 3, 5], [2, 4, 6, 7]]
+
+    nefparts_proj_prod_no_hodge = p.nef_partitions(keep_products=True, keep_projections=True, with_hodge_numbers=False)
+    assert len(nefparts_proj_prod_no_hodge) == 15
+
+    nefparts_sym_proj_prod_no_hodge = p.nef_partitions(keep_symmetric=True, keep_products=True, keep_projections=True, with_hodge_numbers=False)
+    assert len(nefparts_sym_proj_prod_no_hodge) == 127
+
+    nefparts_hodge = p.nef_partitions()
+    assert len(nefparts_hodge) == 11
+    for i, nefpart in enumerate(nefparts_hodge):
+        if i == 0:
+            assert nefpart[0] == [[0, 1, 5, 6], [2, 3, 4, 7]]
+            assert nefpart[1] == [[1, 0, 0, 1], [0, 3, 51, 0], [0, 51, 3, 0], [1, 0, 0, 1]]
+            assert nefpart[2] == -96
+        elif i == 1:
+            assert nefpart[0] == [[0, 1, 3, 5], [2, 4, 6, 7]]
+            assert nefpart[1] == [[1, 0, 0, 1], [0, 3, 51, 0], [0, 51, 3, 0], [1, 0, 0, 1]]
+            assert nefpart[2] == -96

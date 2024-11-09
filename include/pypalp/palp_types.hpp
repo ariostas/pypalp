@@ -3,6 +3,7 @@
 extern "C" {
 #include "Global.h"
 #include "LG.h"
+#include "Nef.h"
 }
 
 // We we reexport some types used in PALP and wrap others into structs to make

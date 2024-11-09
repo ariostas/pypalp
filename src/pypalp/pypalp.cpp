@@ -11,5 +11,10 @@ PYBIND11_MODULE(pypalp, m) {
       .def("is_ip", &Polytope::is_ip)
       .def("is_reflexive", &Polytope::is_reflexive)
       .def("normal_form", &Polytope::normal_form,
-           pybind11::arg("affine") = false);
+           pybind11::arg("affine") = false)
+      .def("nef_partitions", &Polytope::nef_partitions,
+           pybind11::arg("codim") = 2, pybind11::arg("keep_symmetric") = false,
+           pybind11::arg("keep_products") = false,
+           pybind11::arg("keep_projections") = false,
+           pybind11::arg("with_hodge_numbers") = true);
 }
