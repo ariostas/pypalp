@@ -5,6 +5,22 @@ import numpy as np
 from pypalp import Polytope
 
 
+def test_dim():
+    p = Polytope([[1, 1], [-1, 1], [1, -1], [-1, -1]])
+    assert p.dim() == 2
+
+    p = Polytope(
+        [
+            [1, 0, 0, 0],
+            [0, 1, 0, 0],
+            [0, 0, 1, 0],
+            [0, 0, 0, 1],
+            [-1, -1, -1, -1],
+        ]
+    )
+    assert p.dim() == 4
+
+
 def test_vertices():
     points = np.array([[1, 1], [-1, 1], [1, -1], [-1, -1]], dtype=np.int64)
     vertices = points

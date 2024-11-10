@@ -5,6 +5,7 @@
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+#include <string>
 #include <tuple>
 
 #include "pypalp/palp_types.hpp"
@@ -93,6 +94,16 @@ struct Polytope {
     ran_Sort_VL = false;
     ran_Make_VEPM = false;
     ran_Complete_Poly = false;
+  }
+
+  int dim() { return P->n; }
+
+  std::string repr() {
+    std::string output;
+    output += "A ";
+    output += std::to_string(dim());
+    output += "-dimensional PALP polytope";
+    return output;
   }
 
   pybind11::array_t<Long> vertices() {
