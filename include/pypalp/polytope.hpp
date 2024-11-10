@@ -96,8 +96,8 @@ struct Polytope {
   }
 
   pybind11::array_t<Long> vertices() {
-    if (vertices_) {
-      return *vertices_;
+    if (vertices_.has_value()) {
+      return vertices_.value();
     }
 
     std::atexit(check_final_status);
@@ -117,7 +117,7 @@ struct Polytope {
       is_ip_ = Find_Equations(P.get(), V.get(), E.get());
       ran_Find_Equations = true;
     }
-    if (!ran_EL_to_PPL && *is_ip_) {
+    if (!ran_EL_to_PPL && is_ip_.value()) {
       is_reflexive_ = EL_to_PPL(E.get(), DP.get(), &P->n);
       ran_EL_to_PPL = true;
     }
@@ -144,12 +144,12 @@ struct Polytope {
 
     vertices_ = std::move(result);
 
-    return *vertices_;
+    return vertices_.value();
   }
 
   pybind11::array_t<Long> points() {
-    if (points_) {
-      return *points_;
+    if (points_.has_value()) {
+      return points_.value();
     }
 
     std::atexit(check_final_status);
@@ -172,7 +172,7 @@ struct Polytope {
       is_ip_ = Find_Equations(P.get(), V.get(), E.get());
       ran_Find_Equations = true;
     }
-    if (!ran_EL_to_PPL && *is_ip_) {
+    if (!ran_EL_to_PPL && is_ip_.value()) {
       is_reflexive_ = EL_to_PPL(E.get(), DP.get(), &P->n);
       ran_EL_to_PPL = true;
     }
@@ -207,38 +207,43 @@ struct Polytope {
 
     points_ = std::move(result);
 
-    return *points_;
+    return points_.value();
   }
 
   bool is_ip() {
     // This is computed in vertices()
     vertices();
-    return *is_ip_;
+    return is_ip_.value();
   }
 
   bool is_reflexive() {
     // This is computed in vertices()
     vertices();
-    // Need to also check if it is IP since is_reflexive_ is std::nullopt if
-    // is_ip_ is false
-    return *is_ip_ && *is_reflexive_;
+    // It is not defined if it is not IP
+    return is_reflexive_.value_or(false);
   }
 
   pybind11::array_t<Long> normal_form(bool affine) {
-    if (affine and affine_normal_form_) {
-      return *affine_normal_form_;
-    } else if (!affine and normal_form_) {
-      return *normal_form_;
+    if (affine and affine_normal_form_.has_value()) {
+      return affine_normal_form_.value();
+    } else if (!affine and normal_form_.has_value()) {
+      return normal_form_.value();
     }
 
     // Make sure vertices have been computed
     vertices();
+
+    std::atexit(check_final_status);
+    outFILE = std::tmpfile();
 
     if (affine) {
       if (!ANF) {
         ANF = std::make_unique<AffineNormalForm>();
       }
       Make_ANF(P.get(), V.get(), E.get(), ANF->data);
+
+      std::fclose(outFILE);
+      outFILE = nullptr;
 
       ssize_t num_vert = V->nv;
       ssize_t dim = P->n;
@@ -256,7 +261,7 @@ struct Polytope {
       ANF = nullptr;
 
       affine_normal_form_ = std::move(result);
-      return *affine_normal_form_;
+      return affine_normal_form_.value();
     } else {
       if (!NF) {
         NF = std::make_unique<NormalForm>();
@@ -267,6 +272,9 @@ struct Polytope {
       int SymNum;
       Make_Poly_Sym_NF(P.get(), V.get(), E.get(), &SymNum, VP->data, NF->data,
                        0, 0, 0);
+
+      std::fclose(outFILE);
+      outFILE = nullptr;
 
       ssize_t num_vert = V->nv;
       ssize_t dim = P->n;
@@ -285,7 +293,7 @@ struct Polytope {
       VP = nullptr;
 
       normal_form_ = std::move(result);
-      return *normal_form_;
+      return normal_form_.value();
     }
   }
 
