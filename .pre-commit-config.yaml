@@ -12,6 +12,8 @@ repos:
       - id: mixed-line-ending
       - id: requirements-txt-fixer
       - id: trailing-whitespace
+      - id: name-tests-test
+        args: ["--pytest-test-first"]
 
   - repo: https://github.com/cheshirekow/cmake-format-precommit
     rev: "v0.6.13"
@@ -30,3 +32,10 @@ repos:
     hooks:
     - id: clang-format
       types_or: [c++, c]
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.7.2
+    hooks:
+      - id: ruff
+        args: ["--fix", "--show-fixes"]
+      - id: ruff-format
