@@ -1,6 +1,8 @@
 # PyPALP: a Python Package for Analyzing Lattice Polytopes
 
 [![Python CI](https://github.com/ariostas/pypalp/actions/workflows/python.yml/badge.svg)](https://github.com/ariostas/pypalp/actions/workflows/python.yml)
+[![PyPI - Version](https://img.shields.io/pypi/v/pypalp)](https://pypi.org/project/pypalp/)
+[![PyPI - Downloads](https://img.shields.io/pypi/dm/pypalp)](https://pypi.org/project/pypalp/)
 
 This project provides Python bindings for the [PALP](http://hep.itp.tuwien.ac.at/~kreuzer/CY/CYpalp.html) package developed by M. Kreuzer and H. Skarke. The purpose of this project is to make PALP more easily installable and accessible. The original PALP code can be found in their [website](http://hep.itp.tuwien.ac.at/~kreuzer/CY/CYpalp.html) or in their [GitLab](https://gitlab.com/stringstuwien/PALP). PyPALP uses a fork with minor modifications, which can be found [here](https://github.com/ariostas/PALP).
 
@@ -59,6 +61,25 @@ array([[ 1,  0,  0,  0,  0],
        [ 0,  0,  0,  0,  1],
        [ 0,  0,  0, -1, -1],
        [ 0,  0,  0,  0,  0]])
+>>> p.equations()
+array([[-1, -1, -1,  2, -1,  1],
+       [ 2, -1, -1,  2, -1,  1],
+       [-1, -1,  1,  2, -1,  1],
+       [ 2, -1,  1,  2, -1,  1],
+       [-1,  2, -1,  2, -1,  1],
+       [-1,  2,  1,  2, -1,  1],
+       [-1, -1, -1, -1,  2,  1],
+       [ 2, -1, -1, -1,  2,  1],
+       [-1, -1,  1, -1,  2,  1],
+       [ 2, -1,  1, -1,  2,  1],
+       [-1,  2, -1, -1,  2,  1],
+       [-1,  2,  1, -1,  2,  1],
+       [-1, -1, -1, -1, -1,  1],
+       [ 2, -1, -1, -1, -1,  1],
+       [-1, -1,  1, -1, -1,  1],
+       [ 2, -1,  1, -1, -1,  1],
+       [-1,  2, -1, -1, -1,  1],
+       [-1,  2,  1, -1, -1,  1]])
 >>> p.is_ip()
 True
 >>> p.is_reflexive()
