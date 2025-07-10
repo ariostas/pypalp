@@ -67,6 +67,36 @@ def test_points():
     assert sorted_computed_points == sorted_points
 
 
+def test_equations():
+    equations = np.array([[-1, 0, 1], [0, -1, 1], [1, 0, 1], [0, 1, 1]], dtype=np.int64)
+    sorted_equations = sorted(tuple(eq) for eq in equations)
+    points = np.array(
+        [[-1, -1], [-1, 1], [1, -1], [1, 1]],
+        dtype=np.int64,
+    )
+
+    p = Polytope(points)
+    computed_equations = p.equations()
+    sorted_computed_equations = sorted(tuple(eq) for eq in computed_equations)
+
+    assert len(computed_equations) == 4
+    assert sorted_computed_equations == sorted_equations
+
+    equations = np.array([[-1, 0, 2], [0, -1, 2], [1, 0, 2], [0, 1, 2]], dtype=np.int64)
+    sorted_equations = sorted(tuple(eq) for eq in equations)
+    points = np.array(
+        [[-2, -2], [-2, 2], [2, -2], [2, 2]],
+        dtype=np.int64,
+    )
+
+    p = Polytope(points)
+    computed_equations = p.equations()
+    sorted_computed_equations = sorted(tuple(eq) for eq in computed_equations)
+
+    assert len(computed_equations) == 4
+    assert sorted_computed_equations == sorted_equations
+
+
 def test_ip():
     vertices = [
         [1, 0, 0, 0],

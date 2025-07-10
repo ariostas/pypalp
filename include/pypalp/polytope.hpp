@@ -45,6 +45,7 @@ struct Polytope {
   std::optional<pybind11::array_t<Long>> points_;
   std::optional<pybind11::array_t<Long>> normal_form_;
   std::optional<pybind11::array_t<Long>> affine_normal_form_;
+  std::optional<pybind11::array_t<Long>> equations_;
 
   Polytope(std::string const &input) {
     std::atexit(check_final_status);
@@ -219,6 +220,48 @@ struct Polytope {
     points_ = std::move(result);
 
     return points_.value();
+  }
+
+  pybind11::array_t<Long> equations() {
+    if (equations_.has_value()) {
+      return equations_.value();
+    }
+
+    std::atexit(check_final_status);
+    outFILE = std::tmpfile();
+
+    if (!V) {
+      V = std::make_unique<VertexNumList>();
+    }
+    if (!E) {
+      E = std::make_unique<EqList>();
+    }
+
+    if (!ran_Find_Equations) {
+      is_ip_ = Find_Equations(P.get(), V.get(), E.get());
+      ran_Find_Equations = true;
+    }
+
+    std::fclose(outFILE);
+    outFILE = nullptr;
+
+    ssize_t num_eqs = E->ne;
+    ssize_t dim = P->n;
+
+    auto result = pybind11::array_t<Long>({num_eqs, dim + 1});
+
+    auto buf = result.mutable_data();
+
+    for (int i = 0; i < num_eqs; i++) {
+      for (int j = 0; j < dim; j++) {
+        buf[i * (dim + 1) + j] = E->e[i].a[j];
+      }
+      buf[i * (dim + 1) + dim] = E->e[i].c;
+    }
+
+    equations_ = std::move(result);
+
+    return equations_.value();
   }
 
   bool is_ip() {

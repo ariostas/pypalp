@@ -10,6 +10,7 @@ PYBIND11_MODULE(pypalp, m) {
       .def("dim", &Polytope::dim)
       .def("vertices", &Polytope::vertices)
       .def("points", &Polytope::points)
+      .def("equations", &Polytope::equations)
       .def("is_ip", &Polytope::is_ip)
       .def("is_reflexive", &Polytope::is_reflexive)
       .def("normal_form", &Polytope::normal_form,
