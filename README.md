@@ -8,7 +8,7 @@ This project provides Python bindings for the [PALP](http://hep.itp.tuwien.ac.at
 
 The functionality and documentation of this project are currently fairly limited. If there is enough interest, I will continue to expand on both functionality and documentation. Please open an issue to ask for more functionality, or even better, make a pull request!
 
-PALP is written in C and was never meant to have Python bindings. Some of the design choices make it quite tricky to do so, but I have found some hacky ways to work around them. I have tried to document the
+PALP is written in C and was never meant to have Python bindings. Some of the design choices make it quite tricky to do so, but I have found some hacky ways to work around them. I have tried to document the workarounds I used to get things to work.
 
 ## Installation
 
