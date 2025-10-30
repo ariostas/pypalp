@@ -2,7 +2,8 @@
 
 #include "pypalp/polytope.hpp"
 
-PYBIND11_MODULE(pypalp, m) {
+PYBIND11_MODULE(pypalp, m, pybind11::mod_gil_not_used(),
+                pybind11::multiple_interpreters::per_interpreter_gil()) {
   pybind11::class_<Polytope>(m, "Polytope")
       .def(pybind11::init<std::string const &>())
       .def(pybind11::init<pybind11::array_t<int> const &>())
