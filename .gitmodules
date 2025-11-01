@@ -1,3 +1,0 @@
-[submodule "extern/palp"]
-	path = extern/palp
-	url = git@github.com:ariostas/PALP.git
