@@ -20,7 +20,7 @@ jobs:
           submodules: "recursive"
       - name: Build SDist
         run: pipx run build --sdist
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
@@ -45,7 +45,7 @@ jobs:
           CIBW_SKIP: "*_i686 *-macosx_x86_64"
           CIBW_BUILD_VERBOSITY: 1
       - name: Upload wheels
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: cibw-wheels-${{ github.event.release.tag_name }}-${{ matrix.os }}
           retention-days: 1
@@ -63,7 +63,7 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           pattern: cibw-*
           path: dist
