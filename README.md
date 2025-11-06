@@ -19,7 +19,7 @@ pip install pypalp
 
 If you want to tweak compilation parameters or anything else, you can clone the repository and build the wheel yourself.
 ```bash
-git clone --recurse-submodules https://github.com/ariostas/pypalp.git
+git clone https://github.com/ariostas/pypalp.git
 cd pypalp
 pip install .
 ```
