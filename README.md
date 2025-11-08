@@ -13,11 +13,13 @@ PALP is written in C and was never meant to have Python bindings. Some of the de
 ## Installation
 
 PyPALP can be installed in most cases simply by running
+
 ```bash
 pip install pypalp
 ```
 
 If you want to tweak compilation parameters or anything else, you can clone the repository and build the wheel yourself.
+
 ```bash
 git clone https://github.com/ariostas/pypalp.git
 cd pypalp
