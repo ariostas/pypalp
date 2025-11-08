@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.15...3.29)
+cmake_minimum_required(VERSION 3.24...4.1)
 project(
   ${SKBUILD_PROJECT_NAME}
   DESCRIPTION "A Python Package for Analyzing Lattice Polytopes"
@@ -9,7 +9,12 @@ set(POLY_Dmax
     11
     CACHE STRING "Maximum polytope dimension")
 
-add_subdirectory(extern/palp)
+include(FetchContent)
+FetchContent_Declare(
+  palp
+  GIT_REPOSITORY https://github.com/ariostas/PALP.git
+  GIT_TAG main)
+FetchContent_MakeAvailable(palp)
 
 set(PYBIND11_FINDPYTHON ON)
 find_package(pybind11 CONFIG REQUIRED)
