@@ -15,12 +15,12 @@ jobs:
     name: Make SDist
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           submodules: "recursive"
       - name: Build SDist
         run: pipx run build --sdist
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: cibw-sdist
           path: dist/*.tar.gz
@@ -33,7 +33,7 @@ jobs:
         os: [ubuntu-24.04, ubuntu-24.04-arm, macos-14]
     steps:
       - name: Check out repo
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           submodules: "recursive"
       - name: Build wheels
@@ -45,7 +45,7 @@ jobs:
           CIBW_SKIP: "*_i686 *-macosx_x86_64"
           CIBW_BUILD_VERBOSITY: 1
       - name: Upload wheels
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: cibw-wheels-${{ github.event.release.tag_name }}-${{ matrix.os }}
           retention-days: 1
@@ -63,7 +63,7 @@ jobs:
     if: github.event_name == 'release' && github.event.action == 'published'
     steps:
       - name: Download wheels
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           pattern: cibw-*
           path: dist
